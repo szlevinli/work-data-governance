@@ -1,9 +1,28 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import type { NextPage } from 'next';
+import Head from 'next/head';
+import Image from 'next/image';
+import { ChangeEventHandler, useState } from 'react';
+import styles from '../styles/Home.module.css';
+import csv from 'csvtojson';
 
 const Home: NextPage = () => {
+  const [filename, setFilename] = useState('');
+  const [fileContent, setFileContent] = useState<Array<any>>([]);
+
+  const handleSelectedFile: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const file = e.currentTarget.files?.[0];
+    if (file) {
+      setFilename(file.name);
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = async function (e) {
+        const buffer = e.target?.result;
+        const content = await csv().fromString(buffer as string);
+        setFileContent(content);
+      };
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -20,6 +39,22 @@ const Home: NextPage = () => {
         <p className={styles.description}>
           Get started by editing{' '}
           <code className={styles.code}>pages/index.tsx</code>
+        </p>
+
+        <p>
+          <input
+            type="file"
+            name=""
+            id=""
+            accept=".csv"
+            onChange={handleSelectedFile}
+          />
+        </p>
+
+        <p>You selected file is : {filename}</p>
+
+        <p>
+          <code>{JSON.stringify(fileContent)}</code>
         </p>
 
         <div className={styles.grid}>
@@ -66,7 +101,7 @@ const Home: NextPage = () => {
         </a>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
